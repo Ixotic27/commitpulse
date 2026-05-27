@@ -1,0 +1,398 @@
+[
+  {
+    "number": 523,
+    "title": "bug: GraphQL API rate limits not gracefully handled for power users",
+    "body": "### Description\n\nUsers fetching a massive set of badges or contribution graphs occasionally hit GitHub\u2019s API rate limiting, resulting in silent failures or incomplete graphs.\n\n### Steps to Reproduce\n\n1. Batch load multiple user profiles with deep (~1000+) histories simultaneously\n2. Monitor for partial data loads or rate limit errors in console\n\n### Expected Behavior\n\nAPI rate limiting should be detected and communicated to the user, ideally with a retry or backoff mechanism.\n\n### Screenshots / Logs\n\n_No response_\n\n### GitHub Username (If applicable)\n\n_No response_\n\n### Environment\n\nChrome",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/523"
+  },
+  {
+    "number": 522,
+    "title": "feat: Deep GraphQL caching and smart sync strategies",
+    "body": "### Is your feature request related to a problem? Please describe.\n\nGraphQL API syncs all data on every update, resulting in redundant traffic and slower UX for large datasets.\n\n### Describe the solution you'd like\n\nImplement smart caching/invalidation strategies client and server side for GraphQL contribution data, with delta sync and partial update support.\n\n### Describe alternatives you've considered\n\nManual cache refreshes or short polling intervals, which remain inefficient.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/522"
+  },
+  {
+    "number": 521,
+    "title": "feat: Advanced 3D isometric customization options",
+    "body": "### Is your feature request related to a problem? Please describe.\n\nCurrent 3D isometric monoliths offer limited real-time customization and lack advanced interactive controls for geometry and perspective.\n\n### Describe the solution you'd like\n\nAdd support for customizing and animating 3D monolith tilt/rotation, light direction, and real-time perspective controls in the web UI.\n\n### Describe alternatives you've considered\n\nPreset themes with fixed 3D angles or offering only basic perspective tools.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/521"
+  },
+  {
+    "number": 389,
+    "title": "refactor(svg): add tests for auto-theme SVG \u2014 verify dark palette variables",
+    "body": "## \ud83e\udde9 Background\nThe existing auto-theme tests in `lib/svg/generator.test.ts` verify that dark palette variables are present. However there is no test for the actual hex values matching `AUTO_DARK_THEME` from `themes.ts`.\n\n## \ud83c\udfaf Objective\nAdd a test verifying the exact dark theme hex values (`0d1117`, `c9d1d9`, `58a6ff`) appear in the auto-theme SVG's `@media` block.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/generator.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Assert each dark hex value appears after `prefers-color-scheme: dark`.\n\n## \u2705 Definition of done\n- [ ] Test asserts specific dark-theme hex values.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/389"
+  },
+  {
+    "number": 380,
+    "title": "refactor(svg): add a ghost-city mode integration test in route",
+    "body": "## \ud83e\udde9 Background\nThe ghost city mode (all-zero contributions calendar) is tested at the generator level but not at the API route level. An end-to-end path regression could go unnoticed.\n\n## \ud83c\udfaf Objective\nAdd a test in `app/api/streak/route.test.ts` that mocks `fetchGitHubContributions` to return an all-zero calendar and asserts the ghost city stroke attributes appear in the SVG.\n\n## \ud83d\udcc1 Files to touch\n- `app/api/streak/route.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Create an all-zero `mockCalendar`.\n- Assert `stroke-width=\"0.5\"` and `stroke-opacity=\"0.3\"` appear in the response body.\n\n## \u2705 Definition of done\n- [ ] 1 new test case.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/380"
+  },
+  {
+    "number": 373,
+    "title": "refactor(github): add test for fetchUserProfile cache hit behavior",
+    "body": "## \ud83e\udde9 Background\n`lib/github.test.ts` has cache tests for `fetchGitHubContributions` but not for `fetchUserProfile` or `fetchUserRepos`.\n\n## \ud83c\udfaf Objective\nAdd cache-hit tests for all three fetch functions.\n\n## \ud83d\udcc1 Files to touch\n- `lib/github.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Call `fetchUserProfile` twice with the same username, assert `fetch` is called once.\n- Same for `fetchUserRepos`.\n- Test `bypassCache: true` forces a second fetch.\n\n## \u2705 Definition of done\n- [ ] 4 new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/373"
+  },
+  {
+    "number": 367,
+    "title": "refactor(dashboard): add loading skeleton for AIInsights component",
+    "body": "## \ud83e\udde9 Background\n`components/dashboard/DashboardLoading.tsx` has skeletons for most widgets but not for the AI Insights panel. Users briefly see an empty space before data loads.\n\n## \ud83c\udfaf Objective\nCreate an `AIInsightsSkeleton` component mirroring the structure of `AIInsights` and add it to `DashboardLoading`.\n\n## \ud83d\udcc1 Files to touch\n- `components/dashboard/AIInsightsSkeleton.tsx` (new)\n- `app/(root)/dashboard/loading.tsx`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Build a skeleton with 3 shimmer rows matching the insight item height.\n- Use the existing `.shimmer` CSS class.\n- Add to the right sidebar in `DashboardLoading`.\n\n## \u2705 Definition of done\n- [ ] Skeleton is visually consistent with other skeletons.\n- [ ] No functional regressions.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/367"
+  },
+  {
+    "number": 366,
+    "title": "refactor(svg): add ?speed= boundary tests for exact min and max values",
+    "body": "## \ud83e\udde9 Background\nExisting speed tests cover out-of-range values but not the exact boundaries `2s` (minimum) and `20s` (maximum).\n\n## \ud83c\udfaf Objective\nAdd boundary tests to `app/api/streak/route.test.ts`.\n\n## \ud83d\udcc1 Files to touch\n- `app/api/streak/route.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Test `?speed=2s` \u2192 SVG contains `2s`.\n- Test `?speed=20s` \u2192 SVG contains `20s`.\n- Test `?speed=2.0s` \u2192 treated as invalid (non-integer) \u2192 falls back to `8s`.\n\n## \u2705 Definition of done\n- [ ] 3 new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/366"
+  },
+  {
+    "number": 365,
+    "title": "refactor(svg): add ?year= parameter test for contributions from a specific year",
+    "body": "## \ud83e\udde9 Background\n`?year=2023` is a documented parameter but there is no test verifying that `from` and `to` date range variables are correctly passed to `fetchGitHubContributions`.\n\n## \ud83c\udfaf Objective\nAdd a test in `app/api/streak/route.test.ts` asserting that `?year=2023` passes `from='2023-01-01T00:00:00Z'` and `to='2023-12-31T23:59:59Z'` to the fetch function.\n\n## \ud83d\udcc1 Files to touch\n- `app/api/streak/route.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Assert `fetchGitHubContributions` is called with the correct options object.\n\n## \u2705 Definition of done\n- [ ] 1 new test case with date assertions.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/365"
+  },
+  {
+    "number": 364,
+    "title": "refactor(github): ensure cacheKey function is unit-tested",
+    "body": "## \ud83e\udde9 Background\n`cacheKey` in `lib/github.ts` generates the in-memory cache key string. It's private and untested. If the format changes, cache collisions or misses could occur silently.\n\n## \ud83c\udfaf Objective\nExport `cacheKey` and add unit tests.\n\n## \ud83d\udcc1 Files to touch\n- `lib/github.ts`\n- `lib/github.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Export `cacheKey`.\n- Test: without year, with year, case-insensitivity (uppercase username \u2192 lowercase key), all three `kind` values.\n\n## \u2705 Definition of done\n- [ ] 6+ test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/364"
+  },
+  {
+    "number": 363,
+    "title": "refactor(dashboard): extract intensity-to-class mapping in Heatmap into a standalone utility",
+    "body": "## \ud83e\udde9 Background\n`getIntensityColor` in `components/dashboard/Heatmap.tsx` is a `switch` mapping intensity 0\u20134 to Tailwind class names. It's inline and untested.\n\n## \ud83c\udfaf Objective\nExtract into a pure `getIntensityColor(intensity: number): string` function and add unit tests.\n\n## \ud83d\udcc1 Files to touch\n- `components/dashboard/Heatmap.tsx`\n- `components/dashboard/Heatmap.test.ts` (new)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Extract and export the function.\n- Test all 5 intensity levels (0\u20134) and an out-of-range value.\n\n## \u2705 Definition of done\n- [ ] 6 test cases.\n- [ ] Component renders identically.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/363"
+  },
+  {
+    "number": 362,
+    "title": "refactor(api): add integration test for og route verifying stat values in image response",
+    "body": "## \ud83e\udde9 Background\n`app/api/og/route.tsx` has no tests. It calls `/api/streak` internally and renders an `ImageResponse`. At minimum we can verify the route handles missing stat data gracefully.\n\n## \ud83c\udfaf Objective\nAdd `app/api/og/route.test.ts` with basic tests.\n\n## \ud83d\udcc1 Files to touch\n- `app/api/og/route.test.ts` (new)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Mock `fetch` to return a JSON streak response.\n- Test: route returns 200.\n- Test: fallback to zeros when fetch fails (mock rejected promise).\n- Test: `?user=` required (or defaults to 'unknown').\n\n## \u2705 Definition of done\n- [ ] 3+ test cases.\n- [ ] `vitest run` passes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/362"
+  },
+  {
+    "number": 355,
+    "title": "refactor(svg): add ?text= parameter test in streak route",
+    "body": "## \ud83e\udde9 Background\nThe `?text=` parameter (custom text/label color) has no route-level test. Only `?bg=` and `?accent=` are tested.\n\n## \ud83c\udfaf Objective\nAdd a test asserting that `?text=ff0000` causes the hex `#ff0000` to appear in the SVG body.\n\n## \ud83d\udcc1 Files to touch\n- `app/api/streak/route.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add test for `?text=ff0000` \u2192 body contains `#ff0000`.\n- Add test for an invalid text value \u2192 falls back without crashing.\n\n## \u2705 Definition of done\n- [ ] 2 new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/355"
+  },
+  {
+    "number": 353,
+    "title": "refactor(svg): add tests for generateNotFoundSVG in generator.test.ts",
+    "body": "## \ud83e\udde9 Background\n`generateNotFoundSVG` is exported but has no direct unit tests. Only the route error-handling test indirectly covers it.\n\n## \ud83c\udfaf Objective\nAdd focused tests for `generateNotFoundSVG` in `lib/svg/generator.test.ts`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/generator.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Test: output is valid SVG (contains `<svg` and `</svg>`).\n- Test: username appears in the output.\n- Test: NOT FOUND text appears.\n- Test: ghost tower paths contain expected stroke attributes.\n- Test: custom bg/accent/text colors appear in the output.\n\n## \u2705 Definition of done\n- [ ] 5+ new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/353"
+  },
+  {
+    "number": 350,
+    "title": "refactor(github): add JSDoc to generateAchievements function",
+    "body": "## \ud83e\udde9 Background\n`generateAchievements` is well-tested but undocumented. The milestone arrays are implicit, and the `progress` field calculation isn't obvious without reading the code.\n\n## \ud83c\udfaf Objective\nAdd JSDoc to `generateAchievements` and the `CONTRIBUTION_MILESTONES` / `STREAK_MILESTONES` constants.\n\n## \ud83d\udcc1 Files to touch\n- `lib/github.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Document parameters, return type, and the progress clamping behavior.\n- Add `@example`.\n\n## \u2705 Definition of done\n- [ ] Full JSDoc present.\n- [ ] No functional changes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/350"
+  },
+  {
+    "number": 349,
+    "title": "refactor(customize): add tests for stripHash and isValidHex in customize/utils.ts",
+    "body": "## \ud83e\udde9 Background\n`stripHash` and `isValidHex` in `app/customize/utils.ts` duplicate similar logic from `lib/svg/sanitizer.ts` and have no tests.\n\n## \ud83c\udfaf Objective\nConsider deduplicating with the sanitizer, and add tests for both functions.\n\n## \ud83d\udcc1 Files to touch\n- `app/customize/utils.test.ts` (new or extend)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Test `stripHash`: with `#`, without `#`, empty string.\n- Test `isValidHex`: valid 6-digit, invalid chars, short, with `#` prefix.\n\n## \u2705 Definition of done\n- [ ] 6+ test cases.\n- [ ] All tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/349"
+  },
+  {
+    "number": 348,
+    "title": "refactor(customize): add tests for getExportSnippet in customize/utils.ts",
+    "body": "## \ud83e\udde9 Background\n`getExportSnippet` and `getPlaceholderSnippet` in `app/customize/utils.ts` have no tests. If the URL format changes, nothing catches the regression.\n\n## \ud83c\udfaf Objective\nAdd `app/customize/utils.test.ts` with tests for both functions.\n\n## \ud83d\udcc1 Files to touch\n- `app/customize/utils.test.ts` (new)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Test markdown format: result starts with `![CommitPulse]` and contains the correct URL.\n- Test HTML format: result starts with `<img src=`.\n- Test placeholder: query string contains `your-github-username`.\n\n## \u2705 Definition of done\n- [ ] 4+ test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/348"
+  },
+  {
+    "number": 346,
+    "title": "refactor(navbar): add unit tests for Navbar mobile menu toggle",
+    "body": "## \ud83e\udde9 Background\nThe `Navbar` component has no tests. The mobile menu toggle (open/close on button click, auto-close on viewport resize) is behavior-critical and untested.\n\n## \ud83c\udfaf Objective\nCreate `app/components/navbar.test.tsx` with tests for the mobile menu.\n\n## \ud83d\udcc1 Files to touch\n- `app/components/navbar.test.tsx` (new)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Mock `framer-motion` and `lucide-react`.\n- Test: menu hidden by default, button click shows menu, second click hides it, breakpoint resize hides it.\n\n## \u2705 Definition of done\n- [ ] 4+ test cases.\n- [ ] `vitest run` passes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/346"
+  },
+  {
+    "number": 344,
+    "title": "refactor(svg): add unit tests for sanitizeRadius with string inputs",
+    "body": "## \ud83e\udde9 Background\n`sanitizeRadius` accepts both `string` and `number`, but the existing test suite doesn't cover float strings, leading zeros, or extreme negative values fully.\n\n## \ud83c\udfaf Objective\nExpand `sanitizeRadius` test coverage in `lib/svg/sanitizer.test.ts`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/sanitizer.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add: `'8.7'` \u2192 `8` (parseInt truncates), `'-999'` \u2192 `0`, `'50'` \u2192 `50`, `'51'` \u2192 `50`, `'00'` \u2192 `0`.\n\n## \u2705 Definition of done\n- [ ] 5+ new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/344"
+  },
+  {
+    "number": 343,
+    "title": "refactor(svg): add unit tests for sanitizer.ts \u2014 sanitizeFont edge cases",
+    "body": "## \ud83e\udde9 Background\n`sanitizeFont` tests in `lib/svg/sanitizer.test.ts` are minimal. Several edge cases are uncovered: whitespace-only input, extremely long names, names with numbers, and names that become empty after sanitization.\n\n## \ud83c\udfaf Objective\nExpand `sanitizeFont` test coverage.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/sanitizer.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add: `null` \u2192 `null`, `'   '` \u2192 `null`, `'Fira Code'` (with space) \u2192 `'Fira Code'`, `'123'` \u2192 `'123'`, injection attempt \u2192 cleaned or `null`.\n\n## \u2705 Definition of done\n- [ ] 5+ new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/343"
+  },
+  {
+    "number": 342,
+    "title": "refactor(svg): add tests for deterministicRandom() helper",
+    "body": "## \ud83e\udde9 Background\n`deterministicRandom` drives particle positions and animation delays. If it changes, every particle position shifts. It has no tests.\n\n## \ud83c\udfaf Objective\nExport and test `deterministicRandom`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/generator.ts`\n- `lib/svg/generator.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Export the function.\n- Test: same seed always returns the same value, result is in [0, 1), different seeds return different values.\n\n## \u2705 Definition of done\n- [ ] 3+ test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/342"
+  },
+  {
+    "number": 341,
+    "title": "refactor(svg): add tests for getSizeScale() helper",
+    "body": "## \ud83e\udde9 Background\n`getSizeScale` in `lib/svg/generator.ts` is a private helper with no tests. An off-by-one in the scale factor would produce incorrectly-sized SVGs.\n\n## \ud83c\udfaf Objective\nExport `getSizeScale` and add unit tests.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/generator.ts`\n- `lib/svg/generator.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Export the function.\n- Test: `undefined` \u2192 1, `'small'` \u2192 ~0.667, `'medium'` \u2192 1, `'large'` \u2192 ~1.333.\n\n## \u2705 Definition of done\n- [ ] 4 test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/341"
+  },
+  {
+    "number": 339,
+    "title": "refactor(dashboard): add tests for LanguageChart gradient computation",
+    "body": "## \ud83e\udde9 Background\n`components/dashboard/LanguageChart.tsx` computes the `conic-gradient` stop string via a `reduce`. This logic is currently untested beyond the existing render test.\n\n## \ud83c\udfaf Objective\nExtract the gradient computation into `buildGradientStops(languages: LanguageData[]): string` and add unit tests.\n\n## \ud83d\udcc1 Files to touch\n- `components/dashboard/LanguageChart.tsx`\n- `components/dashboard/LanguageChart.test.tsx`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Extract the helper.\n- Test: one language (100%), two languages, percentages that round correctly.\n\n## \u2705 Definition of done\n- [ ] Helper tested with 3+ cases.\n- [ ] Existing render tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/339"
+  },
+  {
+    "number": 338,
+    "title": "refactor(dashboard): add tests for CommitClock peak detection",
+    "body": "## \ud83e\udde9 Background\n`components/dashboard/CommitClock.tsx` computes a `peakIndex` (the day with the most commits) to render the dominant spoke. This logic is currently untested.\n\n## \ud83c\udfaf Objective\nExtract `findPeakIndex(data: CommitClockData[]): number` and add unit tests.\n\n## \ud83d\udcc1 Files to touch\n- `components/dashboard/CommitClock.tsx`\n- `components/dashboard/CommitClock.test.ts` (new)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Extract the helper.\n- Test: single item, all equal (first wins), clear winner, all zeros.\n\n## \u2705 Definition of done\n- [ ] Helper is tested with 4+ cases.\n- [ ] Component renders identically.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/338"
+  },
+  {
+    "number": 337,
+    "title": "refactor(dashboard): add tests for StatsCard miniChartData generation",
+    "body": "## \ud83e\udde9 Background\n`components/dashboard/StatsCard.tsx` uses a deterministic pseudo-random algorithm based on `title.length` to generate sparkline bar heights. This logic has no test, so regressions would be invisible.\n\n## \ud83c\udfaf Objective\nExtract the `miniChartData` generation into a pure `buildMiniChart(seed: number): number[]` helper and add unit tests.\n\n## \ud83d\udcc1 Files to touch\n- `components/dashboard/StatsCard.tsx`\n- `components/dashboard/StatsCard.test.ts` (new)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Extract the function.\n- Test: same seed always produces the same array (deterministic), array length is 12, all values are positive.\n\n## \u2705 Definition of done\n- [ ] Helper is extracted and tested.\n- [ ] Component renders identically.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/337"
+  },
+  {
+    "number": 336,
+    "title": "refactor(dashboard): add tests for Achievements unlock logic",
+    "body": "## \ud83e\udde9 Background\n`generateAchievements` in `lib/github.ts` is tested at the unit level, but `components/dashboard/Achievements.tsx`'s rendering of locked vs unlocked states has no test.\n\n## \ud83c\udfaf Objective\nAdd tests to `Achievements.test.tsx` (new file) verifying that locked achievements show `opacity-30 grayscale` and unlocked ones don't.\n\n## \ud83d\udcc1 Files to touch\n- `components/dashboard/Achievements.test.tsx` (new)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Render with a mix of locked and unlocked achievements.\n- Assert unlocked items have expected class, locked items have `grayscale`.\n- Test \"Show All\" / \"Show Less\" button toggle.\n\n## \u2705 Definition of done\n- [ ] 4+ test cases.\n- [ ] `vitest run` passes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/336"
+  },
+  {
+    "number": 333,
+    "title": "refactor(dashboard): extract share action handlers from ShareSheet.tsx into a useShareActions hook",
+    "body": "## \ud83e\udde9 Background\n`components/dashboard/ShareSheet.tsx` is a large component with 9+ handler functions inlined. Extracting them into a hook would make the component easier to read and the handlers easier to test.\n\n## \ud83c\udfaf Objective\nCreate `hooks/useShareActions.ts` exporting all share handlers and the `states` map.\n\n## \ud83d\udcc1 Files to touch\n- `hooks/useShareActions.ts` (new)\n- `components/dashboard/ShareSheet.tsx`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Move all handle* functions and `states` state into the hook.\n- Accept `username` and `exportData` as parameters.\n- Return the handlers and state.\n- Update `ShareSheet` to use the hook.\n\n## \u2705 Definition of done\n- [ ] `ShareSheet.tsx` is \u2264120 lines.\n- [ ] All existing `ShareSheet.test.tsx` tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/333"
+  },
+  {
+    "number": 332,
+    "title": "refactor(api): add test for ?radius= parameter in streak route",
+    "body": "## \ud83e\udde9 Background\nThe `?radius=` parameter is validated and sanitized but has no route-level test coverage.\n\n## \ud83c\udfaf Objective\nAdd tests that verify `rx` attribute in the SVG background `<rect>` reflects the radius parameter.\n\n## \ud83d\udcc1 Files to touch\n- `app/api/streak/route.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Test `?radius=16`: SVG body contains `rx=\"16\"`.\n- Test `?radius=0`: SVG body contains `rx=\"0\"`.\n- Test `?radius=200` (over cap): SVG body contains `rx=\"50\"` (clamped).\n\n## \u2705 Definition of done\n- [ ] 3 new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/332"
+  },
+  {
+    "number": 331,
+    "title": "refactor(api): add test for ?font= parameter in streak route",
+    "body": "## \ud83e\udde9 Background\n`?font=` is a documented parameter but has no route-level tests. Only generator unit tests cover font handling.\n\n## \ud83c\udfaf Objective\nAdd route-level tests for predefined fonts (`jetbrains`) and dynamic Google Fonts (`Inter`).\n\n## \ud83d\udcc1 Files to touch\n- `app/api/streak/route.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Test `?font=jetbrains`: SVG body contains `JetBrains Mono`.\n- Test `?font=Inter`: SVG body contains the Google Fonts import URL.\n- Test `?font=` (empty): falls back to default fonts.\n\n## \u2705 Definition of done\n- [ ] 3 new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/331"
+  },
+  {
+    "number": 330,
+    "title": "refactor(api): add test for ?size= parameter in streak route",
+    "body": "## \ud83e\udde9 Background\n`?size=small`, `?size=large` are documented URL parameters with no test coverage in `app/api/streak/route.test.ts`.\n\n## \ud83c\udfaf Objective\nAdd tests verifying that `?size=small` produces a 400\u00d7280 SVG and `?size=large` produces an 800\u00d7560 SVG.\n\n## \ud83d\udcc1 Files to touch\n- `app/api/streak/route.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Assert `width=\"400\"` and `height=\"280\"` appear in the small SVG body.\n- Assert `width=\"800\"` and `height=\"560\"` appear in the large SVG body.\n- Assert medium (default) produces `width=\"600\"`.\n\n## \u2705 Definition of done\n- [ ] 3 new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/330"
+  },
+  {
+    "number": 329,
+    "title": "refactor(api): add test for ?hide_title and ?hide_stats params in streak route",
+    "body": "## \ud83e\udde9 Background\n`app/api/streak/route.test.ts` does not test the `?hide_title=true` and `?hide_stats=true` parameters. These are user-visible features that could break silently.\n\n## \ud83c\udfaf Objective\nAdd tests verifying that `?hide_title=true` removes the username from the SVG body and `?hide_stats=true` removes the stats section.\n\n## \ud83d\udcc1 Files to touch\n- `app/api/streak/route.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Test `?hide_title=true`: response body should NOT contain `OCTOCAT`.\n- Test `?hide_stats=true`: response body should NOT contain `CURRENT_STREAK`.\n- Test both flags set to `false` or omitted: labels ARE present.\n\n## \u2705 Definition of done\n- [ ] 4 new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/329"
+  },
+  {
+    "number": 328,
+    "title": "refactor(api): add test for ?lang= parameter in streak route",
+    "body": "## \ud83e\udde9 Background\n`app/api/streak/route.test.ts` has no tests for the `?lang=` parameter. SVG content could silently regress to English if the i18n lookup breaks.\n\n## \ud83c\udfaf Objective\nAdd tests verifying that supported locales produce the correct labels in the SVG output.\n\n## \ud83d\udcc1 Files to touch\n- `app/api/streak/route.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add tests for `?lang=es`, `?lang=hi`, `?lang=fr` asserting the translated label strings appear in the response body.\n- Add a test for an unknown `?lang=xx` asserting it falls back to English.\n\n## \u2705 Definition of done\n- [ ] 4+ new test cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/328"
+  },
+  {
+    "number": 327,
+    "title": "refactor(svg): add unit tests for computeTowers edge cases in layout.ts",
+    "body": "## \ud83e\udde9 Background\n`computeTowers` is tested indirectly through `generateSVG` tests, but edge cases like empty calendars, todayDate fallback behavior, and the 14-week slice limit have no direct coverage.\n\n## \ud83c\udfaf Objective\nCreate `lib/svg/layout.test.ts` with focused tests for `computeTowers`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/layout.test.ts` (new)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Test: empty weeks array, exactly 14 weeks, more than 14 weeks (slice), todayDate in window, todayDate outside window (fallback), ghost city mode.\n\n## \u2705 Definition of done\n- [ ] At least 8 test cases.\n- [ ] All tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/327"
+  },
+  {
+    "number": 326,
+    "title": "refactor(github): add fetchWithRetry unit tests for 429 and 5xx retry logic",
+    "body": "## \ud83e\udde9 Background\n`fetchWithRetry` in `lib/github.ts` handles exponential backoff for 429 / 5xx responses, but has no direct unit tests. It is only indirectly covered by integration-level mocks.\n\n## \ud83c\udfaf Objective\nAdd focused unit tests for `fetchWithRetry` in `lib/github.test.ts`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/github.test.ts`\n- `lib/github.ts` (export `fetchWithRetry` if not already)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Export `fetchWithRetry`.\n- Test: success on first attempt, retry on 429 then success, retry on 500 then success, exhaust retries and throw, network error propagation.\n\n## \u2705 Definition of done\n- [ ] At least 5 test cases cover retry logic.\n- [ ] Existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/326"
+  },
+  {
+    "number": 324,
+    "title": "refactor(hooks): add JSDoc to useRecentSearches hook",
+    "body": "## \ud83e\udde9 Background\n`hooks/useRecentSearches.ts` has no documentation. The `MAX = 5` limit and deduplication behavior should be described for contributors.\n\n## \ud83c\udfaf Objective\nAdd JSDoc to `useRecentSearches`, `addSearch`, and `clearSearches`.\n\n## \ud83d\udcc1 Files to touch\n- `hooks/useRecentSearches.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Document what the hook returns, the MAX cap, and localStorage key.\n- Note SSR safety (the `typeof window === 'undefined'` check).\n\n## \u2705 Definition of done\n- [ ] Full JSDoc present.\n- [ ] No functional changes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/324"
+  },
+  {
+    "number": 323,
+    "title": "refactor(time): add JSDoc and @example to getSecondsUntilUTCMidnight and getSecondsUntilMidnightInTimezone",
+    "body": "## \ud83e\udde9 Background\n`utils/time.ts` is well-tested but undocumented. The DST caveat (up to 1-hour error on transition days) is only in a code comment and should be in JSDoc.\n\n## \ud83c\udfaf Objective\nAdd full JSDoc including `@param`, `@returns`, `@remarks` (DST note), and `@example` to both functions.\n\n## \ud83d\udcc1 Files to touch\n- `utils/time.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Write JSDoc for both functions.\n- Include the DST caveat in `@remarks` on `getSecondsUntilMidnightInTimezone`.\n\n## \u2705 Definition of done\n- [ ] Both functions have full JSDoc.\n- [ ] No functional changes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/323"
+  },
+  {
+    "number": 321,
+    "title": "refactor(api): extract cache-control header builder into a utility function",
+    "body": "## \ud83e\udde9 Background\n`app/api/streak/route.ts` and `app/api/github/route.ts` both compute `Cache-Control` header strings inline using similar ternary expressions.\n\n## \ud83c\udfaf Objective\nCreate `utils/cacheControl.ts` exporting `buildCacheControlHeader({ refresh, random, secondsToMidnight }): string`.\n\n## \ud83d\udcc1 Files to touch\n- `utils/cacheControl.ts` (new)\n- `app/api/streak/route.ts`\n- `app/api/github/route.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Define the helper.\n- Add unit tests for all three branches (no-cache, no-store, s-maxage).\n- Use from both routes.\n\n## \u2705 Definition of done\n- [ ] Helper is tested.\n- [ ] Routes use the helper.\n- [ ] Existing route tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/321"
+  },
+  {
+    "number": 320,
+    "title": "refactor(api): extract error response builder in app/api/streak/route.ts",
+    "body": "## \ud83e\udde9 Background\nThe catch block in `app/api/streak/route.ts` builds error SVG responses with repeated inline color/radius parsing. This logic is complex and duplicated across not-found and generic error paths.\n\n## \ud83c\udfaf Objective\nExtract `buildErrorSvgResponse(message, parseResult, status): NextResponse` to centralize error SVG construction.\n\n## \ud83d\udcc1 Files to touch\n- `app/api/streak/route.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Create the helper function inside or adjacent to the route file.\n- Use it for both the not-found SVG and the generic error SVG paths.\n- Verify existing error-handling tests still pass.\n\n## \u2705 Definition of done\n- [ ] Error building happens in one function.\n- [ ] All existing route tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/320"
+  },
+  {
+    "number": 319,
+    "title": "refactor(types): add Speed, Scale, BadgeSize branded or literal types to types/index.ts",
+    "body": "## \ud83e\udde9 Background\n`speed` is typed as `string`, `scale` as `'linear' | 'log'`, and `size` as `'small' | 'medium' | 'large'` in scattered files. Centralizing these in `types/index.ts` makes them a single source of truth.\n\n## \ud83c\udfaf Objective\nExport `Scale`, `BadgeSize`, and optionally `SpeedString` from `types/index.ts` and replace inline definitions elsewhere.\n\n## \ud83d\udcc1 Files to touch\n- `types/index.ts`\n- `lib/validations.ts`\n- `app/customize/types.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add the type aliases to `types/index.ts`.\n- Import and reuse in validations and customize types.\n- Verify `tsc --noEmit` is clean.\n\n## \u2705 Definition of done\n- [ ] Types are defined once and imported everywhere.\n- [ ] No new TypeScript errors.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/319"
+  },
+  {
+    "number": 318,
+    "title": "refactor(types): add a branded HexColor type to replace plain strings",
+    "body": "## \ud83e\udde9 Background\n`BadgeParams`, `BadgeTheme`, and sanitizer functions all use `string` for hex colors. A branded type like `type HexColor = string & { __brand: 'HexColor' }` would prevent accidentally passing unsanitized values.\n\n## \ud83c\udfaf Objective\nIntroduce a `HexColor` branded type in `types/index.ts` and update `sanitizeHexColor` to return it.\n\n## \ud83d\udcc1 Files to touch\n- `types/index.ts`\n- `lib/svg/sanitizer.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Define the branded type.\n- Update `sanitizeHexColor` return type.\n- Fix any resulting TypeScript errors without adding casts.\n\n## \u2705 Definition of done\n- [ ] `HexColor` type exists and is used in at least sanitizer + `BadgeTheme`.\n- [ ] `tsc --noEmit` passes.\n- [ ] No runtime behavior changes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/318"
+  },
+  {
+    "number": 317,
+    "title": "refactor(i18n): add Korean (ko) locale to badgeLabels",
+    "body": "## \ud83e\udde9 Background\nKorea has a vibrant open-source community. Adding Korean brings CommitPulse to another large developer audience.\n\n## \ud83c\udfaf Objective\nAdd a `ko` locale entry to `lib/i18n/badgeLabels.ts`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/i18n/badgeLabels.ts`\n- `README.md`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add the `ko` entry. Suggested: `\ud604\uc7ac_\uc5f0\uc18d`, `\uc5f0\uac04_\ucd1d\ud569`, `\ucd5c\uace0_\uc5f0\uc18d`.\n- Update README.\n\n## \u2705 Definition of done\n- [ ] `?lang=ko` renders Korean labels.\n- [ ] All tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/317"
+  },
+  {
+    "number": 316,
+    "title": "refactor(i18n): add Simplified Chinese (zh) locale to badgeLabels",
+    "body": "## \ud83e\udde9 Background\nChinese developers form one of the largest GitHub communities. Simplified Chinese support is a high-value addition.\n\n## \ud83c\udfaf Objective\nAdd a `zh` locale entry to `lib/i18n/badgeLabels.ts`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/i18n/badgeLabels.ts`\n- `README.md`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add the `zh` entry. Suggested: `\u5f53\u524d\u8fde\u7eed`, `\u5e74\u5ea6\u603b\u8ba1`, `\u6700\u9ad8\u8fde\u7eed`.\n- Update README.\n\n## \u2705 Definition of done\n- [ ] `?lang=zh` renders Chinese labels.\n- [ ] All tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/316"
+  },
+  {
+    "number": 315,
+    "title": "refactor(i18n): add Portuguese (pt) locale to badgeLabels",
+    "body": "## \ud83e\udde9 Background\nPortuguese is one of the top 5 languages on GitHub. Adding it expands CommitPulse's global reach.\n\n## \ud83c\udfaf Objective\nAdd a `pt` locale entry to `lib/i18n/badgeLabels.ts`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/i18n/badgeLabels.ts`\n- `README.md`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add the `pt` entry. Suggested: `S\u00c9RIE_ATUAL`, `TOTAL_ANUAL`, `S\u00c9RIE_M\u00c1XIMA`.\n- Update README.\n\n## \u2705 Definition of done\n- [ ] `?lang=pt` renders Portuguese labels.\n- [ ] All tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/315"
+  },
+  {
+    "number": 314,
+    "title": "refactor(i18n): add Japanese (ja) locale to badgeLabels",
+    "body": "## \ud83e\udde9 Background\nJapan has a large GitHub developer community. Adding Japanese locale support makes CommitPulse more inclusive.\n\n## \ud83c\udfaf Objective\nAdd a `ja` locale entry to `lib/i18n/badgeLabels.ts`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/i18n/badgeLabels.ts`\n- `README.md`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add the `ja` entry. Suggested: `\u73fe\u5728_\u30b9\u30c8\u30ea\u30fc\u30af`, `\u5e74\u9593_\u5408\u8a08`, `\u6700\u9ad8_\u30b9\u30c8\u30ea\u30fc\u30af`.\n- Update the README `lang` parameter table.\n\n## \u2705 Definition of done\n- [ ] `?lang=ja` renders Japanese labels.\n- [ ] All tests pass.\n- [ ] README updated.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/314"
+  },
+  {
+    "number": 313,
+    "title": "refactor(i18n): add German (de) locale to badgeLabels",
+    "body": "## \ud83e\udde9 Background\n`lib/i18n/badgeLabels.ts` supports `en`, `es`, `hi`, and `fr`. German is one of the most common developer locales and is missing.\n\n## \ud83c\udfaf Objective\nAdd a `de` locale entry with accurate German translations for all three badge labels.\n\n## \ud83d\udcc1 Files to touch\n- `lib/i18n/badgeLabels.ts`\n- `README.md` (update `lang` parameter docs)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add `de: { CURRENT_STREAK: '...', ANNUAL_SYNC_TOTAL: '...', PEAK_STREAK: '...' }`.\n- Use technically accurate German \u2014 suggest: `AKTUELL_SERIE`, `JAHRES_GESAMT`, `SPITZEN_SERIE`.\n- Update the parameter table in README.\n\n## \u2705 Definition of done\n- [ ] `?lang=de` renders German labels in the SVG.\n- [ ] Existing tests pass.\n- [ ] README updated.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/313"
+  },
+  {
+    "number": 312,
+    "title": "refactor(github): move CONTRIBUTION_MILESTONES and STREAK_MILESTONES into lib/svg/constants.ts or a config file",
+    "body": "## \ud83e\udde9 Background\n`CONTRIBUTION_MILESTONES` and `STREAK_MILESTONES` arrays in `lib/github.ts` are business-configuration values that ideally live near other constants, not inside a fetch module.\n\n## \ud83c\udfaf Objective\nMove them to `lib/config.ts` (or `lib/svg/constants.ts`) and import from there.\n\n## \ud83d\udcc1 Files to touch\n- `lib/github.ts`\n- `lib/config.ts` (new or existing)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Create/find the right file.\n- Export the arrays.\n- Update imports in `github.ts`.\n\n## \u2705 Definition of done\n- [ ] Arrays are no longer in `github.ts`.\n- [ ] `generateAchievements` tests pass unchanged.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/312"
+  },
+  {
+    "number": 311,
+    "title": "refactor(github): add JSDoc to fetchGitHubContributions, fetchUserProfile, fetchUserRepos",
+    "body": "## \ud83e\udde9 Background\nThe three fetch functions in `lib/github.ts` are public API surface but have no JSDoc. The `bypassCache`, `from`, and `to` options are especially non-obvious.\n\n## \ud83c\udfaf Objective\nAdd `@param`, `@returns`, `@throws`, and `@example` to all three functions.\n\n## \ud83d\udcc1 Files to touch\n- `lib/github.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Document the `FetchOptions` type fields.\n- Note retry behavior and error shapes.\n\n## \u2705 Definition of done\n- [ ] All three functions are documented.\n- [ ] No functional changes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/311"
+  },
+  {
+    "number": 310,
+    "title": "refactor(svg): centralize GHOST_HEIGHT_PX and other layout constants in lib/svg/constants.ts",
+    "body": "## \ud83e\udde9 Background\n`lib/svg/layout.ts` defines magic constants like `GHOST_HEIGHT_PX`, `LOG_SCALE_MULTIPLIER`, `MAX_LOG_HEIGHT` etc. at the module top. These would be more discoverable in a shared constants file.\n\n## \ud83c\udfaf Objective\nCreate `lib/svg/constants.ts` exporting all layout and rendering constants, then import from it in `layout.ts` and `generator.ts`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/constants.ts` (new)\n- `lib/svg/layout.ts`\n- `lib/svg/generator.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Move all uppercase constants to the new file.\n- Update imports.\n- Verify no test regressions.\n\n## \u2705 Definition of done\n- [ ] Constants are in one place.\n- [ ] All tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/310"
+  },
+  {
+    "number": 309,
+    "title": "refactor(svg): add JSDoc to computeTowers in layout.ts",
+    "body": "## \ud83e\udde9 Background\n`computeTowers` is the heart of the isometric projection and is called by both rendering paths, yet has no documentation. The `todayDate` parameter purpose and the 14-week slice are especially non-obvious.\n\n## \ud83c\udfaf Objective\nAdd JSDoc to `computeTowers` explaining each parameter, the 14-week window, ghost city mode, and the `todayDate` fallback.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/layout.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Document all three parameters.\n- Note the `TowerData` interface fields that callers depend on.\n\n## \u2705 Definition of done\n- [ ] Full JSDoc present.\n- [ ] No functional changes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/309"
+  },
+  {
+    "number": 308,
+    "title": "refactor(svg): add JSDoc to all exported functions in generator.ts",
+    "body": "## \ud83e\udde9 Background\n`generateSVG`, `generateNotFoundSVG`, and `escapeXML` are all undocumented. Contributors working on themes or error pages have no quick reference for parameters.\n\n## \ud83c\udfaf Objective\nAdd `@param`, `@returns`, and usage `@example` JSDoc to all three exported functions.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/generator.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Document each parameter meaning (especially the `params.autoTheme` flag and `calendar` shape).\n- Add an `@example` showing a minimal call.\n\n## \u2705 Definition of done\n- [ ] Full JSDoc present on all three exports.\n- [ ] No functional changes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/308"
+  },
+  {
+    "number": 307,
+    "title": "refactor(validations): add descriptive error messages to all required Zod fields",
+    "body": "## \ud83e\udde9 Background\nSome optional fields in `streakParamsSchema` silently fall back via `.catch()` with no hint to the caller about what went wrong. Clearer error messages improve the developer experience.\n\n## \ud83c\udfaf Objective\nAudit `lib/validations.ts` and add human-readable `message` strings to all fields that currently have implicit or missing errors.\n\n## \ud83d\udcc1 Files to touch\n- `lib/validations.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Review each `.catch()` and `.optional()` field.\n- Where appropriate, add `.refine()` with a descriptive message instead of silent fallback.\n- Make sure existing 400 tests still pass.\n\n## \u2705 Definition of done\n- [ ] All fields have at minimum an inline comment about their fallback behavior.\n- [ ] At least 3 fields gain explicit error messages.\n- [ ] No test regressions.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/307"
+  },
+  {
+    "number": 305,
+    "title": "refactor(calculate): extract today-index lookup into findTodayIndex() helper",
+    "body": "## \ud83e\udde9 Background\nFinding the local \"today\" inside `calculateStreak` requires both an `Intl.DateTimeFormat` call and a `findIndex` with a fallback. This is non-trivial enough to deserve its own named function.\n\n## \ud83c\udfaf Objective\nExtract into `findTodayIndex(days: ContributionDay[], timezone: string, now: Date): number`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/calculate.ts`\n- `lib/calculate.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Move the lookup + fallback into the helper.\n- Add tests: date found, date not found (fallback to last index), empty days array.\n\n## \u2705 Definition of done\n- [ ] Helper exported and tested.\n- [ ] `calculateStreak` is shorter and delegates to it.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/305"
+  },
+  {
+    "number": 304,
+    "title": "refactor(calculate): extract grace-period logic into an isStreakAlive() helper",
+    "body": "## \ud83e\udde9 Background\nThe boolean expression `today.contributionCount > 0 || (yesterday?.contributionCount ?? 0) > 0` inside `calculateStreak` is the grace-period rule. It's correct but the intent is implicit.\n\n## \ud83c\udfaf Objective\nExtract into `isStreakAlive(today: ContributionDay, yesterday: ContributionDay | null): boolean`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/calculate.ts`\n- `lib/calculate.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Write and export the helper.\n- Add tests: both active, only today, only yesterday, both zero.\n- Use in `calculateStreak`.\n\n## \u2705 Definition of done\n- [ ] Helper is tested with 4+ cases.\n- [ ] `calculateStreak` reads more clearly.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/304"
+  },
+  {
+    "number": 302,
+    "title": "refactor(cache): add JSDoc to TTLCache and its public methods",
+    "body": "## \ud83e\udde9 Background\n`lib/cache.ts` has no documentation. Contributor understanding of TTL semantics, key format expectations, and thread-safety caveats relies entirely on reading the implementation.\n\n## \ud83c\udfaf Objective\nAdd JSDoc comments to the `TTLCache` class, constructor, and all public methods.\n\n## \ud83d\udcc1 Files to touch\n- `lib/cache.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Add `@param`, `@returns`, and `@example` tags to `get`, `set`, `clear`.\n- Note that this cache is in-process only (not shared across serverless invocations).\n\n## \u2705 Definition of done\n- [ ] All public members have JSDoc.\n- [ ] No functional changes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/302"
+  },
+  {
+    "number": 301,
+    "title": "refactor(cache): add a size() method and export cache instance metrics",
+    "body": "## \ud83e\udde9 Background\nThere's no way to observe how many entries are currently alive in `TTLCache`. A `size()` method would enable metrics and debugging without exposing internals.\n\n## \ud83c\udfaf Objective\nAdd `size(): number` to `TTLCache` that returns the count of non-expired entries.\n\n## \ud83d\udcc1 Files to touch\n- `lib/cache.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Implement `size()` by iterating the internal store and counting non-expired items.\n- Add tests: empty cache, after TTL expiry, after `clear()`.\n\n## \u2705 Definition of done\n- [ ] `size()` is implemented and tested.\n- [ ] `clear()` results in `size() === 0`.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/301"
+  },
+  {
+    "number": 299,
+    "title": "refactor(github): extract commitClock aggregation into buildCommitClock() helper",
+    "body": "## \ud83e\udde9 Background\nThe day-of-week commit aggregation loop at the end of `getFullDashboardData` is self-contained logic with no dedicated tests.\n\n## \ud83c\udfaf Objective\nExtract into `buildCommitClock(allDays: ContributionDay[]): CommitClockData[]` and add tests.\n\n## \ud83d\udcc1 Files to touch\n- `lib/github.ts`\n- `lib/github.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Extract the function.\n- Test with a known set of days and assert the correct per-day totals.\n\n## \u2705 Definition of done\n- [ ] Function is exported and tested.\n- [ ] Existing test in `getFullDashboardData` for `commitClock` still passes.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/299"
+  },
+  {
+    "number": 298,
+    "title": "refactor(github): extract insights generation into a standalone buildInsights() function",
+    "body": "## \ud83e\udde9 Background\nInsight strings are built inline inside `getFullDashboardData`. They depend on streaks and language data, making them straightforward to extract but currently untested.\n\n## \ud83c\udfaf Objective\nExtract `buildInsights(streakStats, languages): AIInsight[]` and add tests.\n\n## \ud83d\udcc1 Files to touch\n- `lib/github.ts`\n- `lib/github.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Extract the function and export it.\n- Test: streak > 3 path, streak \u2264 3 path, missing language fallback.\n\n## \u2705 Definition of done\n- [ ] `buildInsights` is independently tested.\n- [ ] `getFullDashboardData` delegates to it.\n- [ ] All tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/298"
+  },
+  {
+    "number": 297,
+    "title": "refactor(github): extract developer score formula into a pure computeDeveloperScore() function",
+    "body": "## \ud83e\udde9 Background\nThe five-factor developer score formula inside `getFullDashboardData` mixes arithmetic with business logic in a way that's easy to miscalculate and hard to test independently.\n\n## \ud83c\udfaf Objective\nExtract into `computeDeveloperScore({ repos, followers, stars, contributions, longestStreak }): number`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/github.ts`\n- `lib/github.test.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Write the pure function.\n- Add tests covering: all-zero inputs, saturation of each factor, max-100 clamping.\n- Call from `getFullDashboardData`.\n\n## \u2705 Definition of done\n- [ ] Formula is unit-tested with at least 5 cases.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/297"
+  },
+  {
+    "number": 295,
+    "title": "refactor(github): split getFullDashboardData into focused sub-functions",
+    "body": "## \ud83e\udde9 Background\n`getFullDashboardData` in `lib/github.ts` is ~120 lines handling profile mapping, language aggregation, developer score, insights, achievements, and commit clock \u2014 all in one function. This makes it hard to test or reuse individual parts.\n\n## \ud83c\udfaf Objective\nExtract at least three pure helpers:\n- `buildProfileData(profileData, totalStars, developerScore)`\n- `aggregateLanguages(repos)`\n- `buildInsights(streakStats, languages)`\n\n## \ud83d\udcc1 Files to touch\n- `lib/github.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Extract each helper, keeping existing tests green.\n- Export helpers for unit-testability.\n- Add at least one focused test per helper in `lib/github.test.ts`.\n\n## \u2705 Definition of done\n- [ ] `getFullDashboardData` is \u226460 lines.\n- [ ] Each helper is independently testable.\n- [ ] All existing tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/295"
+  },
+  {
+    "number": 294,
+    "title": "refactor(layout): extract computeFaceOpacity into lib/svg/layout.ts with unit tests",
+    "body": "## \ud83e\udde9 Background\n`computeFaceOpacity` already exists in `layout.ts` but has no unit tests. Face opacity logic is subtle (ghost vs zero vs active) and easy to break silently.\n\n## \ud83c\udfaf Objective\nAdd a `lib/svg/layout.test.ts` file with focused tests for `computeFaceOpacity` and `computeTowerHeight`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/layout.test.ts` (new)\n- `lib/svg/layout.ts` (export helpers if not already)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Export `computeFaceOpacity` and `computeTowerHeight` from `layout.ts`.\n- Write tests: ghost mode, zero count, low count, high count, log vs linear scale.\n\n## \u2705 Definition of done\n- [ ] At least 8 test cases cover both helpers.\n- [ ] `vitest run` passes without regressions.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/294"
+  },
+  {
+    "number": 293,
+    "title": "refactor(layout): extract ghost-city detection into a named isGhostCity() predicate",
+    "body": "## \ud83e\udde9 Background\n`lib/svg/layout.ts` inline-computes `shouldShowGhostCity` via a `totalVisibleContributions === 0` check spread across a `forEach` loop. The intent is clear but the implementation is implicit.\n\n## \ud83c\udfaf Objective\nExtract into `function isGhostCity(weeks: ContributionWeek[]): boolean` and call it from `computeTowers`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/layout.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Write the pure predicate function.\n- Replace the inline computation.\n- Export it and add a small unit test covering 0-contribution and >0-contribution calendars.\n\n## \u2705 Definition of done\n- [ ] `isGhostCity` is a named, exported, tested function.\n- [ ] `computeTowers` reads clearly.\n- [ ] All layout and SVG tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/293"
+  },
+  {
+    "number": 292,
+    "title": "refactor(svg): move FONT_MAP out of generator.ts into a dedicated lib/svg/fonts.ts module",
+    "body": "## \ud83e\udde9 Background\n`FONT_MAP` in `lib/svg/generator.ts` maps shorthand keys to full CSS font stacks. As more fonts are added, keeping it in the generator inflates an already large file.\n\n## \ud83c\udfaf Objective\nMove `FONT_MAP` and font-resolution logic into `lib/svg/fonts.ts` and re-export it from `generator.ts`.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/generator.ts`\n- `lib/svg/fonts.ts` (new)\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Create `lib/svg/fonts.ts` exporting `FONT_MAP` and a `resolveFont(font?: string): string | null` helper.\n- Import and use in `generator.ts`.\n- Add unit tests for `resolveFont` covering predefined, dynamic, and invalid inputs.\n\n## \u2705 Definition of done\n- [ ] `generator.ts` no longer contains the font map.\n- [ ] `resolveFont` is unit-tested.\n- [ ] All existing generator tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/292"
+  },
+  {
+    "number": 290,
+    "title": "refactor(svg): extract radar scan line into renderRadarScan() helper",
+    "body": "## \ud83e\udde9 Background\nThe animated radar `<rect>` element appears identically in both `generateSVG` and `generateAutoThemeSVG`, differing only in the fill attribute vs CSS class.\n\n## \ud83c\udfaf Objective\nCreate `renderRadarScan(speed, sf, accentColor, autoTheme): string` and call it from both renderers.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/generator.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Move the `<rect>` template string into the helper.\n- Branch on `autoTheme` for `fill` vs `class=\"cp-accent-fill\"`.\n- Replace both inline usages.\n\n## \u2705 Definition of done\n- [ ] Single source of truth for radar scan markup.\n- [ ] All tests pass.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/290"
+  },
+  {
+    "number": 288,
+    "title": "refactor(svg): extract tower-path rendering into a standalone buildTowerPaths() helper",
+    "body": "## \ud83e\udde9 Background\nBoth `generateSVG` and `generateAutoThemeSVG` in `lib/svg/generator.ts` contain a near-identical `for` loop that builds tower SVG strings. This duplicates ~30 lines of complex geometry logic.\n\n## \ud83c\udfaf Objective\nExtract the loop body into a `buildTowerPaths(towers, accent, autoTheme)` helper so each renderer calls one function.\n\n## \ud83d\udcc1 Files to touch\n- `lib/svg/generator.ts`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Create `function buildTowerPaths(towers: TowerData[], accent: string, autoTheme: boolean): string`.\n- Move the shared loop body into it.\n- Call it from both `generateSVG` and `generateAutoThemeSVG`.\n\n## \u2705 Definition of done\n- [ ] Both renderers delegate to the new helper.\n- [ ] All SVG generator tests pass unchanged.\n- [ ] No observable change in SVG output.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/288"
+  },
+  {
+    "number": 165,
+    "title": "enhancement(ui): add clean no-data states for activity visual components",
+    "body": "## \ud83e\udde9 Background\nIf activity data is missing or empty (e.g., for a brand new GitHub user), some visual components may render awkwardly or look broken on the dashboard.\n\n## \ud83c\udfaf Objective\nProvide polished placeholders when no activity is available.\n\n## \ud83d\udcc1 Files to check\n- `components/dashboard/Heatmap.tsx`\n- `components/dashboard/ActivityLandscape.tsx`\n- `components/dashboard/CommitClock.tsx`\n- `related tests`\n\n## \ud83d\udee0\ufe0f Implementation steps\n- Detect empty dataset in each component.\n- Render consistent placeholder UI message (e.g., \"No recent activity to display\").\n- Add test coverage for empty states.\n\n## \u2705 Definition of done\n- [ ] Components degrade gracefully with no data.\n- [ ] Placeholder style matches project design (dark theme compatible).\n- [ ] Tests verify fallback rendering.",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/165"
+  },
+  {
+    "number": 150,
+    "title": "Enhance the /claim Bot Welcome Message",
+    "body": "## \ud83d\udcdd Description\n\nWhen a contributor comments `/claim` on an issue, our custom GitHub Action (`.github/scripts/issue-management/claim-handler.js`) assigns them to it. Currently, it likely just assigns the user without much feedback. \n\nTo improve the open-source contributor experience for GSSoC, the bot should reply with a friendly, detailed comment explaining the rules (e.g., the 3-day expiry limit).\n\n## \u2705 Tasks\n\n- [ ] Open `.github/scripts/issue-management/claim-handler.js`.\n- [ ] After successfully calling the GitHub API to assign the user, use `github.rest.issues.createComment` to post a reply.\n- [ ] The reply should look something like this:\n  ```markdown\n  \ud83c\udf89 **Assigned!** Welcome to the project, @{username}. \n  \n  \u23f3 **Reminder:** You have **3 days** to submit a Pull Request. After 3 days of inactivity, you will be automatically unassigned to give others a chance (as per our GSSoC anti-hoarding policy).\n  \n  Happy coding! \ud83d\ude80\n\n   ```\n\n## \ud83d\udcc1 Files to Touch\n\n    .github/scripts/issue-management/claim-handler.js",
+    "url": "https://github.com/JhaSourav07/commitpulse/issues/150"
+  }
+]

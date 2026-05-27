@@ -32,7 +32,9 @@ vi.mock('framer-motion', () => ({
   },
 }));
 
-const mockAchievements = [
+import { Achievement } from '@/types/dashboard';
+
+const mockAchievements: Achievement[] = [
   {
     id: '1',
     title: 'Achiev 1',
