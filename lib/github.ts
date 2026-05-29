@@ -1,6 +1,11 @@
 // lib/github.ts
 
-import type { ContributionCalendar, ContributionDay } from '../types';
+import type {
+  ContributionCalendar,
+  ContributionDay,
+  ExtendedContributionData,
+  RepoContribution,
+} from '../types';
 import { calculateStreak } from './calculate';
 import { TTLCache } from './cache';
 import { LANGUAGE_COLORS } from './svg/languageColors';
@@ -87,6 +92,7 @@ type GitHubContributionResponse = {
     user: {
       contributionsCollection: {
         contributionCalendar: ContributionCalendar;
+        commitContributionsByRepository: RepoContribution[];
       };
     } | null;
   };
@@ -165,7 +171,7 @@ const MAX_REPOS_CACHE_SIZE = 500;
 // Specifying explicit capacity limits enforces a First-In, First-Out (FIFO)
 // eviction strategy (since standard ES6 Map maintains key insertion order) and
 // bounds max memory consumption to stable, predictable boundaries.
-const contributionsCache = new TTLCache<ContributionCalendar>(MAX_CONTRIBUTIONS_CACHE_SIZE);
+const contributionsCache = new TTLCache<ExtendedContributionData>(MAX_CONTRIBUTIONS_CACHE_SIZE);
 const profileCache = new TTLCache<GitHubUserProfile>(MAX_PROFILE_CACHE_SIZE);
 const reposCache = new TTLCache<GitHubRepo[]>(MAX_REPOS_CACHE_SIZE);
 
@@ -240,7 +246,7 @@ export function displayName(profile: GitHubUserProfile): string {
 export async function fetchGitHubContributions(
   username: string,
   options: FetchOptions = {}
-): Promise<ContributionCalendar> {
+): Promise<ExtendedContributionData> {
   if (!validateGitHubUsername(username)) {
     console.warn(
       `[GitHub API] Username "${username}" does not match standard GitHub format. Attempting fetch anyway.`
@@ -266,6 +272,16 @@ export async function fetchGitHubContributions(
                 date
                 color
               }
+            }
+          }
+          commitContributionsByRepository(maxRepositories: 100) {
+            repository {
+              primaryLanguage {
+                name
+              }
+            }
+            contributions(first: 1) {
+              totalCount
             }
           }
         }
@@ -302,12 +318,18 @@ export async function fetchGitHubContributions(
   }
 
   const calendar = data.data.user.contributionsCollection.contributionCalendar;
+  const repoContributions = data.data.user.contributionsCollection.commitContributionsByRepository;
+
+  const result: ExtendedContributionData = {
+    calendar,
+    repoContributions,
+  };
 
   if (!options.bypassCache) {
-    contributionsCache.set(key, calendar, GITHUB_CACHE_TTL_MS);
+    contributionsCache.set(key, result, GITHUB_CACHE_TTL_MS);
   }
 
-  return calendar;
+  return result;
 }
 
 /**
@@ -561,10 +583,15 @@ export async function getFullDashboardData(username: string, options: FetchOptio
     );
   }
 
-  const calendarData =
+  const extendedCalendarData =
     calendarResult.status === 'fulfilled'
       ? calendarResult.value
-      : ({ totalContributions: 0, weeks: [] } as ContributionCalendar);
+      : ({
+          calendar: { totalContributions: 0, weeks: [] },
+          repoContributions: [],
+        } as ExtendedContributionData);
+  const calendarData = extendedCalendarData.calendar;
+  const repoContributions = extendedCalendarData.repoContributions;
   if (calendarResult.status === 'rejected' && process.env.NODE_ENV === 'development') {
     console.error(
       `[GitHub API] Failed to fetch calendar for user "${username}" (fallback to 0 contributions):`,
@@ -637,9 +664,10 @@ export async function getFullDashboardData(username: string, options: FetchOptio
 
   // 3. Languages Mapping
   const langCounts: Record<string, number> = {};
-  reposData.forEach((repo: GitHubRepo) => {
-    if (repo.language) {
-      langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
+  repoContributions.forEach((contrib) => {
+    const lang = contrib.repository.primaryLanguage?.name;
+    if (lang) {
+      langCounts[lang] = (langCounts[lang] || 0) + contrib.contributions.totalCount;
     }
   });
 

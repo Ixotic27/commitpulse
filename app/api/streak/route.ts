@@ -135,7 +135,7 @@ export async function GET(request: Request) {
       grace,
     };
 
-    const calendar = await fetchGitHubContributions(user, {
+    const { calendar } = await fetchGitHubContributions(user, {
       bypassCache: refresh,
       from,
       to,

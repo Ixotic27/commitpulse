@@ -18,7 +18,10 @@ describe('OG Route', () => {
   });
 
   it('returns 200 successfully', async () => {
-    vi.mocked(fetchGitHubContributions).mockResolvedValue({} as never);
+    vi.mocked(fetchGitHubContributions).mockResolvedValue({
+      calendar: {} as never,
+      repoContributions: [],
+    });
 
     vi.mocked(calculateStreak).mockReturnValue({
       totalContributions: 120,

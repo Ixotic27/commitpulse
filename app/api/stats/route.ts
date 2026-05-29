@@ -47,7 +47,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const calendar = await fetchGitHubContributions(user, { bypassCache: refresh });
+    const { calendar } = await fetchGitHubContributions(user, { bypassCache: refresh });
     const stats = calculateStreak(calendar, timezone);
 
     return NextResponse.json(

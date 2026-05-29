@@ -58,7 +58,10 @@ function makeRequest(params: Record<string, string> = {}): Request {
 describe('GET /api/streak', () => {
   beforeEach(() => {
     vi.clearAllMocks(); // reset call counts so per-test call assertions are isolated
-    vi.mocked(fetchGitHubContributions).mockResolvedValue(mockCalendar);
+    vi.mocked(fetchGitHubContributions).mockResolvedValue({
+      calendar: mockCalendar,
+      repoContributions: [],
+    });
     // Fixed values so Cache-Control assertions don't depend on the real clock.
     vi.mocked(getSecondsUntilUTCMidnight).mockReturnValue(3600);
     vi.mocked(getSecondsUntilMidnightInTimezone).mockReturnValue(7200);
@@ -684,7 +687,10 @@ describe('GET /api/streak', () => {
         ],
       };
 
-      vi.mocked(fetchGitHubContributions).mockResolvedValue(emptyCalendar);
+      vi.mocked(fetchGitHubContributions).mockResolvedValue({
+        calendar: emptyCalendar,
+        repoContributions: [],
+      });
       const response = await GET(makeRequest({ user: 'octocat' }));
       const body = await response.text();
 
