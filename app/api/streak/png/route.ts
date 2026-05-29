@@ -35,6 +35,11 @@ export async function GET(request: Request) {
       headers.set('Cache-Control', cacheControl);
     }
 
+    // Security headers required by CI pipeline
+    headers.set('Content-Security-Policy', "default-src 'none'; img-src 'self' data:;");
+    headers.set('X-Content-Type-Options', 'nosniff');
+    headers.set('X-Frame-Options', 'DENY');
+
     return new NextResponse(pngBuffer as unknown as BodyInit, {
       status: 200,
       headers,
@@ -42,7 +47,14 @@ export async function GET(request: Request) {
   } catch (err) {
     return NextResponse.json(
       { error: 'Failed to convert SVG to PNG', details: String(err) },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          'Content-Security-Policy': "default-src 'none'",
+          'X-Content-Type-Options': 'nosniff',
+          'X-Frame-Options': 'DENY',
+        },
+      }
     );
   }
 }
