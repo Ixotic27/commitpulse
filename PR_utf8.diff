@@ -1,0 +1,994 @@
+﻿diff --git a/app/api/og/route.tsx b/app/api/og/route.tsx
+index 03fc3ec..44ef676 100644
+--- a/app/api/og/route.tsx
++++ b/app/api/og/route.tsx
+@@ -59,7 +59,8 @@ export async function GET(req: NextRequest) {
+ 
+   // Only the data fetching is wrapped in try/catch ΓÇö not the JSX rendering.
+   try {
+-    const calendar = await fetchGitHubContributions(user, { bypassCache: true });
++    const userData = await fetchGitHubContributions(user, { bypassCache: true });
++    const calendar = userData.calendar;
+     const stats = calculateStreak(calendar);
+     totalCommits = stats.totalContributions;
+     longestStreak = stats.longestStreak;
+diff --git a/app/api/stats/route.test.ts b/app/api/stats/route.test.ts
+index 5f1a0f3..0e794ad 100644
+--- a/app/api/stats/route.test.ts
++++ b/app/api/stats/route.test.ts
+@@ -38,7 +38,10 @@ function makeRequest(params: Record<string, string> = {}): Request {
+ describe('GET /api/stats', () => {
+   beforeEach(() => {
+     vi.clearAllMocks();
+-    vi.mocked(fetchGitHubContributions).mockResolvedValue(mockCalendar);
++    vi.mocked(fetchGitHubContributions).mockResolvedValue({
++      calendar: mockCalendar,
++      repoContributions: [],
++    });
+   });
+ 
+   // ΓöÇΓöÇΓöÇ Parameter validation ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+diff --git a/app/api/stats/route.ts b/app/api/stats/route.ts
+index f0f5eb5..e817a6a 100644
+--- a/app/api/stats/route.ts
++++ b/app/api/stats/route.ts
+@@ -47,7 +47,8 @@ export async function GET(request: Request) {
+   }
+ 
+   try {
+-    const calendar = await fetchGitHubContributions(user, { bypassCache: refresh });
++    const userData = await fetchGitHubContributions(user, { bypassCache: refresh });
++    const calendar = userData.calendar;
+     const stats = calculateStreak(calendar, timezone);
+ 
+     return NextResponse.json(
+diff --git a/app/api/streak/route.test.ts b/app/api/streak/route.test.ts
+index 9c82fe3..6f8b3b0 100644
+--- a/app/api/streak/route.test.ts
++++ b/app/api/streak/route.test.ts
+@@ -16,7 +16,7 @@ vi.mock('../../../utils/time', () => ({
+ 
+ import { fetchGitHubContributions, getOrgDashboardData } from '../../../lib/github';
+ import { getSecondsUntilUTCMidnight, getSecondsUntilMidnightInTimezone } from '../../../utils/time';
+-import type { ContributionCalendar } from '../../../types';
++import type { ContributionCalendar, ExtendedContributionData } from '../../../types';
+ 
+ // Two weeks of realistic data. The last day has 0 contributions so the streak
+ // is in "grace period" territory ΓÇö a good baseline that exercises most code paths.
+@@ -59,7 +59,10 @@ function makeRequest(params: Record<string, string> = {}): Request {
+ describe('GET /api/streak', () => {
+   beforeEach(() => {
+     vi.clearAllMocks(); // reset call counts so per-test call assertions are isolated
+-    vi.mocked(fetchGitHubContributions).mockResolvedValue(mockCalendar);
++    vi.mocked(fetchGitHubContributions).mockResolvedValue({
++      calendar: mockCalendar,
++      repoContributions: [],
++    } as unknown as ExtendedContributionData);
+     vi.mocked(getOrgDashboardData).mockResolvedValue({
+       profile: {
+         username: 'octocat',
+@@ -821,12 +824,15 @@ describe('GET /api/streak', () => {
+       vi.setSystemTime(new Date('2026-05-20T12:00:00Z'));
+ 
+       vi.mocked(fetchGitHubContributions).mockResolvedValueOnce({
+-        totalContributions: 25,
+-        weeks: [
+-          { contributionDays: [{ date: '2024-11-15', contributionCount: 10 }] },
+-          { contributionDays: [{ date: '2024-12-15', contributionCount: 15 }] },
+-        ],
+-      } as ContributionCalendar);
++        calendar: {
++          totalContributions: 25,
++          weeks: [
++            { contributionDays: [{ date: '2024-11-15', contributionCount: 10 }] },
++            { contributionDays: [{ date: '2024-12-15', contributionCount: 15 }] },
++          ],
++        } as ContributionCalendar,
++        repoContributions: [],
++      } as unknown as ExtendedContributionData);
+ 
+       try {
+         const response = await GET(
+@@ -927,12 +933,15 @@ describe('GET /api/streak', () => {
+     it('applies delta_format=both to show percent and absolute values in the monthly SVG', async () => {
+       // 1. Mock the GitHub fetch with actual weekly data using vi.mocked
+       vi.mocked(fetchGitHubContributions).mockResolvedValueOnce({
+-        totalContributions: 150,
+-        weeks: [
+-          { contributionDays: [{ date: '2026-04-15', contributionCount: 10 }] },
+-          { contributionDays: [{ date: '2026-05-15', contributionCount: 15 }] },
+-        ],
+-      } as unknown as ContributionCalendar);
++        calendar: {
++          totalContributions: 150,
++          weeks: [
++            { contributionDays: [{ date: '2026-04-15', contributionCount: 10 }] },
++            { contributionDays: [{ date: '2026-05-15', contributionCount: 15 }] },
++          ],
++        } as ContributionCalendar,
++        repoContributions: [],
++      } as unknown as ExtendedContributionData);
+ 
+       // 2. Lock the system time to May 2026 so the calendar calculation aligns
+       vi.useFakeTimers();
+@@ -959,12 +968,15 @@ describe('GET /api/streak', () => {
+     it('applies delta_format=absolute to show raw commit counts in the monthly SVG', async () => {
+       // 1. Mock the GitHub fetch with actual weekly data using vi.mocked
+       vi.mocked(fetchGitHubContributions).mockResolvedValueOnce({
+-        totalContributions: 150,
+-        weeks: [
+-          { contributionDays: [{ date: '2026-04-15', contributionCount: 10 }] },
+-          { contributionDays: [{ date: '2026-05-15', contributionCount: 15 }] },
+-        ],
+-      } as unknown as ContributionCalendar);
++        calendar: {
++          totalContributions: 150,
++          weeks: [
++            { contributionDays: [{ date: '2026-04-15', contributionCount: 10 }] },
++            { contributionDays: [{ date: '2026-05-15', contributionCount: 15 }] },
++          ],
++        } as ContributionCalendar,
++        repoContributions: [],
++      } as unknown as ExtendedContributionData);
+       // 2. Lock the system time to May 2026 so the calendar calculation aligns
+       vi.useFakeTimers();
+       vi.setSystemTime(new Date('2026-05-20T12:00:00Z'));
+@@ -1004,7 +1016,10 @@ describe('GET /api/streak', () => {
+         ],
+       };
+ 
+-      vi.mocked(fetchGitHubContributions).mockResolvedValue(emptyCalendar);
++      vi.mocked(fetchGitHubContributions).mockResolvedValue({
++        calendar: emptyCalendar,
++        repoContributions: [],
++      } as unknown as ExtendedContributionData);
+       const response = await GET(makeRequest({ user: 'octocat' }));
+       const body = await response.text();
+ 
+diff --git a/app/api/streak/route.ts b/app/api/streak/route.ts
+index 38d71a6..eb7269b 100644
+--- a/app/api/streak/route.ts
++++ b/app/api/streak/route.ts
+@@ -183,18 +183,20 @@ export async function GET(request: Request) {
+       });
+       calendar = orgData.calendar;
+     } else {
+-      calendar = await fetchGitHubContributions(user, {
++      const userData = await fetchGitHubContributions(user, {
+         bypassCache: refresh,
+         from,
+         to,
+       });
++      calendar = userData.calendar;
+ 
+       if (versus) {
+-        versusCalendar = await fetchGitHubContributions(versus, {
++        const versusData = await fetchGitHubContributions(versus, {
+           bypassCache: refresh,
+           from,
+           to,
+         });
++        versusCalendar = versusData.calendar;
+       }
+     }
+ 
+diff --git a/app/api/wrapped/route.test.ts b/app/api/wrapped/route.test.ts
+index d1b1899..da7101d 100644
+--- a/app/api/wrapped/route.test.ts
++++ b/app/api/wrapped/route.test.ts
+@@ -44,7 +44,9 @@ describe('GET /api/wrapped', () => {
+   beforeEach(() => {
+     vi.clearAllMocks();
+     vi.mocked(getWrappedData).mockResolvedValue(mockWrappedStats);
+-    vi.mocked(fetchGitHubContributions).mockResolvedValue(mockCalendar);
++    vi.mocked(fetchGitHubContributions).mockResolvedValue({
++      calendar: mockCalendar,
++    } as unknown as import('../../../types').ExtendedContributionData);
+   });
+ 
+   describe('parameter validation', () => {
+diff --git a/app/api/wrapped/route.ts b/app/api/wrapped/route.ts
+index d32594c..870e7ed 100644
+--- a/app/api/wrapped/route.ts
++++ b/app/api/wrapped/route.ts
+@@ -10,13 +10,6 @@ import { themes } from '@/lib/svg/themes';
+ const SVG_CSP_HEADER =
+   "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://fonts.gstatic.com;";
+ 
+-class ValidationError extends Error {
+-  constructor(message: string) {
+-    super(message);
+-    this.name = 'ValidationError';
+-  }
+-}
+-
+ function escapeSVGText(value: string): string {
+   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+ }
+@@ -103,7 +96,7 @@ export async function GET(request: Request) {
+     // Fetch calendar contributions for rendering the background mini-monolith
+     const from = `${year}-01-01T00:00:00Z`;
+     const to = `${year}-12-31T23:59:59Z`;
+-    const calendar = await fetchGitHubContributions(user, { from, to, bypassCache: refresh });
++    const { calendar } = await fetchGitHubContributions(user, { from, to, bypassCache: refresh });
+ 
+     const svg = generateWrappedSVG(wrappedStats, params, year, calendar);
+ 
+diff --git a/app/customize/components/ThemeQuickPresets.test.tsx b/app/customize/components/ThemeQuickPresets.test.tsx
+index 882863c..8a6c41a 100644
+--- a/app/customize/components/ThemeQuickPresets.test.tsx
++++ b/app/customize/components/ThemeQuickPresets.test.tsx
+@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
+ import { fireEvent, render, screen } from '@testing-library/react';
+ import { ThemeQuickPresets } from './ThemeQuickPresets';
+ import { THEME_KEYS } from '../types';
+-import { themes } from '../../../lib/svg/themes';
+ 
+ const validKeys = THEME_KEYS.filter((k) => k !== 'auto' && k !== 'random');
+ 
+diff --git a/body-1202.md b/body-1202.md
+new file mode 100644
+index 0000000..098e4c9
+--- /dev/null
++++ b/body-1202.md
+@@ -0,0 +1,21 @@
++## Description ΓÇö What does this PR do? Which issue does it fix?
++
++This PR refactors the language data gathering logic in `lib/github.ts`. Previously, language data was only collected when generating the badge SVG, leaving the server-side calculations unaware of the user's languages. Now, it queries `commitContributionsByRepository` to calculate language stats accurately and updates `fetchGitHubContributions` to return both `calendar` and `repoContributions` inside an `ExtendedContributionData` type.
++
++Fixes #979
++
++## Pillar ΓÇö Which contribution pillar does this fall under?
++
++- [ ] ≡ƒÜÇ New Feature
++- [ ] ≡ƒÉ¢ Bug Fix
++- [ ] ≡ƒÄ¿ New Theme Design
++- [ ] ≡ƒôÉ Geometric SVG Improvement
++- [ ] ΓÅ▒∩╕Å Timezone Logic Optimization
++- [x] ≡ƒº╣ Other (Bug fix, refactoring, docs)
++
++## Checklist ΓÇö Have you ticked off the quality checklist?
++
++- [x] I have read the CONTRIBUTING.md guidelines.
++- [x] I have added tests that prove my fix is effective or that my feature works.
++- [x] New and existing unit tests pass locally with my changes.
++- [x] I have kept the scope of my changes strictly related to the issue.
+diff --git a/body-1205.md b/body-1205.md
+new file mode 100644
+index 0000000..f4c526d
+--- /dev/null
++++ b/body-1205.md
+@@ -0,0 +1,21 @@
++## Description ΓÇö What does this PR do? Which issue does it fix?
++
++This PR implements server-side PNG Rasterization by introducing a new endpoint at `/api/streak/png` that returns a PNG buffer image instead of an SVG. It leverages the `@resvg/resvg-js` library for accurate headless SVG-to-PNG conversion without relying on browser rendering.
++
++Fixes #980
++
++## Pillar ΓÇö Which contribution pillar does this fall under?
++
++- [x] ≡ƒÜÇ New Feature
++- [ ] ≡ƒÉ¢ Bug Fix
++- [ ] ≡ƒÄ¿ New Theme Design
++- [ ] ≡ƒôÉ Geometric SVG Improvement
++- [ ] ΓÅ▒∩╕Å Timezone Logic Optimization
++- [ ] ≡ƒº╣ Other (Bug fix, refactoring, docs)
++
++## Checklist ΓÇö Have you ticked off the quality checklist?
++
++- [x] I have read the CONTRIBUTING.md guidelines.
++- [x] I have added tests that prove my fix is effective or that my feature works.
++- [x] New and existing unit tests pass locally with my changes.
++- [x] I have kept the scope of my changes strictly related to the issue.
+diff --git a/body-1208.md b/body-1208.md
+new file mode 100644
+index 0000000..12ad094
+--- /dev/null
++++ b/body-1208.md
+@@ -0,0 +1,21 @@
++## Description ΓÇö What does this PR do? Which issue does it fix?
++
++This PR implements the requested Versus Mode feature for "Multiplayer Monoliths". Users can now append the `?versus=username2` parameter to the streak API route to compare their commit activity with a friend side-by-side on the same SVG canvas. The `generateVersusSVG` generator offsets their X translations so both isometric cities are rendered beautifully side-by-side with a divider and a "VS" badge.
++
++Fixes #982
++
++## Pillar ΓÇö Which contribution pillar does this fall under?
++
++- [x] ≡ƒÜÇ New Feature
++- [ ] ≡ƒÉ¢ Bug Fix
++- [ ] ≡ƒÄ¿ New Theme Design
++- [ ] ≡ƒôÉ Geometric SVG Improvement
++- [ ] ΓÅ▒∩╕Å Timezone Logic Optimization
++- [ ] ≡ƒº╣ Other (Bug fix, refactoring, docs)
++
++## Checklist ΓÇö Have you ticked off the quality checklist?
++
++- [x] I have read the CONTRIBUTING.md guidelines.
++- [x] I have added tests that prove my fix is effective or that my feature works.
++- [x] New and existing unit tests pass locally with my changes.
++- [x] I have kept the scope of my changes strictly related to the issue.
+diff --git a/lib/github.test.ts b/lib/github.test.ts
+index bba9078..30ace82 100644
+--- a/lib/github.test.ts
++++ b/lib/github.test.ts
+@@ -166,13 +166,16 @@ describe('fetchGitHubContributions', () => {
+       mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [],
++            },
+           },
+         },
+       })
+     );
+ 
+-    const result = await fetchGitHubContributions('octocat');
++    const { calendar: result } = await fetchGitHubContributions('octocat');
+ 
+     expect(result.totalContributions).toBe(mockCalendar.totalContributions);
+     expect(result.weeks[0].contributionDays[0].contributionCount).toBe(3);
+@@ -183,7 +186,10 @@ describe('fetchGitHubContributions', () => {
+       mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [],
++            },
+           },
+         },
+       })
+@@ -213,7 +219,10 @@ describe('fetchGitHubContributions', () => {
+       mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [],
++            },
+           },
+         },
+       })
+@@ -253,7 +262,7 @@ describe('fetchGitHubContributions', () => {
+       })
+     );
+ 
+-    const result = await fetchGitHubContributions('new-user');
++    const { calendar: result } = await fetchGitHubContributions('new-user');
+ 
+     expect(result.totalContributions).toBe(0);
+     expect(result.weeks).toHaveLength(0);
+@@ -346,7 +355,7 @@ describe('fetchGitHubContributions', () => {
+       })
+     );
+ 
+-    const result = await fetchGitHubContributions('sparse-user');
++    const { calendar: result } = await fetchGitHubContributions('sparse-user');
+     expect(result.totalContributions).toBe(0);
+     expect(result.weeks).toHaveLength(1);
+   });
+@@ -373,8 +382,8 @@ describe('fetchGitHubContributions', () => {
+     const r2 = await fetchGitHubContributions('empty-user', {
+       bypassCache: true,
+     });
+-    expect(r1.totalContributions).toBe(r2.totalContributions);
+-    expect(r1.weeks).toEqual(r2.weeks);
++    expect(r1.calendar.totalContributions).toBe(r2.calendar.totalContributions);
++    expect(r1.calendar.weeks).toEqual(r2.calendar.weeks);
+   });
+ });
+ 
+@@ -592,7 +601,19 @@ describe('getFullDashboardData', () => {
+       return mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [
++                {
++                  repository: { primaryLanguage: { name: 'TypeScript' } },
++                  contributions: { totalCount: 200 },
++                },
++                {
++                  repository: { primaryLanguage: { name: 'Rust' } },
++                  contributions: { totalCount: 100 },
++                },
++              ],
++            },
+           },
+         },
+       });
+@@ -671,7 +692,10 @@ describe('getFullDashboardData', () => {
+       return mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [],
++            },
+           },
+         },
+       });
+@@ -700,7 +724,10 @@ describe('getFullDashboardData', () => {
+       return mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [],
++            },
+           },
+         },
+       });
+@@ -770,7 +797,10 @@ describe('GitHub API cache behavior', () => {
+       mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [],
++            },
+           },
+         },
+       })
+@@ -803,14 +833,17 @@ describe('GitHub API cache behavior', () => {
+       mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [],
++            },
+           },
+         },
+       })
+     );
+ 
+     const results = await requests;
+-    expect(results.map((result) => result.totalContributions)).toEqual([42, 42, 42]);
++    expect(results.map((result) => result.calendar.totalContributions)).toEqual([42, 42, 42]);
+   });
+ 
+   it('dedupes rapid synchronous contribution requests until the delayed fetch resolves once', async () => {
+@@ -854,7 +887,7 @@ describe('GitHub API cache behavior', () => {
+     const results = await Promise.all(requests);
+ 
+     expect(resolveFetchSpy).toHaveBeenCalledTimes(1);
+-    expect(results.map((result) => result.totalContributions)).toEqual([42, 42, 42]);
++    expect(results.map((result) => result.calendar.totalContributions)).toEqual([42, 42, 42]);
+   });
+ 
+   it('refresh bypass: bypassCache=true forces a fresh fetch', async () => {
+@@ -862,7 +895,10 @@ describe('GitHub API cache behavior', () => {
+       mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [],
++            },
+           },
+         },
+       })
+@@ -882,7 +918,10 @@ describe('GitHub API cache behavior', () => {
+       mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [],
++            },
+           },
+         },
+       })
+@@ -1230,7 +1269,10 @@ describe('getOrgDashboardData', () => {
+       return mockResponse({
+         data: {
+           user: {
+-            contributionsCollection: { contributionCalendar: mockCalendar },
++            contributionsCollection: {
++              contributionCalendar: mockCalendar,
++              commitContributionsByRepository: [],
++            },
+           },
+         },
+       });
+diff --git a/lib/github.ts b/lib/github.ts
+index 0936754..ea2f01a 100644
+--- a/lib/github.ts
++++ b/lib/github.ts
+@@ -1,6 +1,11 @@
+ // lib/github.ts
+ 
+-import type { ContributionCalendar, ContributionDay } from '@/types';
++import type {
++  ContributionCalendar,
++  ContributionDay,
++  ExtendedContributionData,
++  RepoContribution,
++} from '@/types';
+ import { calculateStreak, aggregateCalendars } from '@/lib/calculate';
+ import { DistributedCache } from '@/lib/cache';
+ import { LANGUAGE_COLORS } from '@/lib/svg/languageColors';
+@@ -155,14 +160,17 @@ function throwIfRateLimited(res: Response): void {
+   }
+ }
+ 
+-type GitHubContributionResponse = {
++interface GitHubGraphQLResponse {
+   data?: {
+     user: {
+-      contributionsCollection: { contributionCalendar: ContributionCalendar };
++      contributionsCollection: {
++        contributionCalendar: ContributionCalendar;
++        commitContributionsByRepository: RepoContribution[];
++      };
+     } | null;
+   };
+   errors?: unknown;
+-};
++}
+ 
+ function getGraphQLErrorMessage(errors: unknown): string {
+   if (!Array.isArray(errors)) return 'GitHub GraphQL API returned an unknown error';
+@@ -187,10 +195,10 @@ type FetchOptions = {
+ 
+ export const GITHUB_CACHE_TTL_MS = 5 * 60 * 1000;
+ 
+-const contributionsCache = new DistributedCache<ContributionCalendar>(1000);
++const contributionsCache = new DistributedCache<ExtendedContributionData>(1000);
+ const profileCache = new DistributedCache<GitHubUserProfile>(1000);
+ const reposCache = new DistributedCache<GitHubRepo[]>(500);
+-const pendingContributions = new Map<string, Promise<ContributionCalendar>>();
++const pendingContributions = new Map<string, Promise<ExtendedContributionData>>();
+ const pendingProfiles = new Map<string, Promise<GitHubUserProfile>>();
+ const pendingRepos = new Map<string, Promise<GitHubRepo[]>>();
+ 
+@@ -271,7 +279,7 @@ export function displayName(profile: GitHubUserProfile): string {
+ export async function fetchGitHubContributions(
+   username: string,
+   options: FetchOptions = {}
+-): Promise<ContributionCalendar> {
++): Promise<ExtendedContributionData> {
+   const key = cacheKey('contributions', username, options.from?.substring(0, 4));
+   if (!options.bypassCache) {
+     const cached = await contributionsCache.get(key);
+@@ -293,6 +301,16 @@ export async function fetchGitHubContributions(
+                 }
+               }
+             }
++            commitContributionsByRepository(maxRepositories: 100) {
++              repository {
++                primaryLanguage {
++                  name
++                }
++              }
++              contributions {
++                totalCount
++              }
++            }
+           }
+         }
+       }
+@@ -317,7 +335,7 @@ export async function fetchGitHubContributions(
+       );
+     }
+ 
+-    const data: GitHubContributionResponse = await res.json();
++    const data: GitHubGraphQLResponse = await res.json();
+ 
+     if (data.errors !== undefined) {
+       if (Array.isArray(data.errors)) {
+@@ -369,9 +387,21 @@ export async function fetchGitHubContributions(
+       });
+     });
+ 
+-    if (!options.bypassCache) await contributionsCache.set(key, calendar, GITHUB_CACHE_TTL_MS);
++    if (!options.bypassCache) {
++      await contributionsCache.set(
++        key,
++        {
++          calendar,
++          repoContributions: data.data.user.contributionsCollection.commitContributionsByRepository,
++        },
++        GITHUB_CACHE_TTL_MS
++      );
++    }
+ 
+-    return calendar;
++    return {
++      calendar,
++      repoContributions: data.data.user.contributionsCollection.commitContributionsByRepository,
++    };
+   };
+ 
+   if (options.bypassCache) return load();
+@@ -535,7 +565,9 @@ export async function getOrgDashboardData(orgName: string, options: FetchOptions
+ 
+   // Fetch calendars for all members concurrently (Capped by member limit to avoid 429)
+   const memberCalendarsPromises = members.map((member: string) =>
+-    fetchGitHubContributions(member, options).catch(() => null)
++    fetchGitHubContributions(member, options)
++      .then((data) => data.calendar)
++      .catch(() => null)
+   );
+ 
+   const calendars = (await Promise.all(memberCalendarsPromises)).filter(
+@@ -772,8 +804,10 @@ export async function getFullDashboardData(username: string, options: FetchOptio
+   const reposData = reposResult.status === 'fulfilled' ? reposResult.value : [];
+   const calendarData =
+     calendarResult.status === 'fulfilled'
+-      ? calendarResult.value
++      ? calendarResult.value.calendar
+       : ({ totalContributions: 0, weeks: [] } as ContributionCalendar);
++  const repoContributions =
++    calendarResult.status === 'fulfilled' ? calendarResult.value.repoContributions || [] : [];
+ 
+   const streakStats = calculateStreak(calendarData);
+   const totalStars = reposData.reduce((acc, repo) => acc + repo.stargazers_count, 0);
+@@ -829,8 +863,11 @@ export async function getFullDashboardData(username: string, options: FetchOptio
+   });
+ 
+   const langCounts: Record<string, number> = {};
+-  reposData.forEach((repo) => {
+-    if (repo.language) langCounts[repo.language] = (langCounts[repo.language] || 0) + 1;
++  repoContributions.forEach((contrib) => {
++    const lang = contrib.repository.primaryLanguage?.name;
++    if (lang) {
++      langCounts[lang] = (langCounts[lang] || 0) + contrib.contributions.totalCount;
++    }
+   });
+ 
+   const totalLangs = Object.values(langCounts).reduce((a, b) => a + b, 0);
+@@ -889,10 +926,11 @@ export async function getWrappedData(
+     signal: options?.signal,
+   };
+ 
+-  const [calendar, repos] = await Promise.all([
++  const [userData, repos] = await Promise.all([
+     fetchGitHubContributions(username, fetchOptions),
+     fetchUserRepos(username, fetchOptions),
+   ]);
++  const calendar = userData.calendar;
+ 
+   const allDays = calendar.weeks.flatMap((w) => w.contributionDays);
+ 
+diff --git a/package-lock.json b/package-lock.json
+index 5784f0a..d3c6f07 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -151,6 +151,7 @@
+       "integrity": "sha512-RgHBCvtjbOK2gXSNBNIkNoEc9qoVEtau3hj8gEqKQuL3HZAibKarWFEI3Lfm6EYKkLalOh8eSrj9b+ch9H/VBA==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@babel/code-frame": "^7.29.7",
+         "@babel/generator": "^7.29.7",
+@@ -481,6 +482,7 @@
+         }
+       ],
+       "license": "MIT",
++      "peer": true,
+       "engines": {
+         "node": ">=20.19.0"
+       },
+@@ -529,6 +531,7 @@
+         }
+       ],
+       "license": "MIT",
++      "peer": true,
+       "engines": {
+         "node": ">=20.19.0"
+       }
+@@ -539,6 +542,7 @@
+       "integrity": "sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw==",
+       "devOptional": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@emnapi/wasi-threads": "1.2.1",
+         "tslib": "^2.4.0"
+@@ -550,6 +554,7 @@
+       "integrity": "sha512-ewvYlk86xUoGI0zQRNq/mC+16R1QeDlKQy21Ki3oSYXNgLb45GV1P6A0M+/s6nyCuNDqe5VpaY84BzXGwVbwFA==",
+       "devOptional": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "tslib": "^2.4.0"
+       }
+@@ -2887,8 +2892,7 @@
+       "resolved": "https://registry.npmjs.org/@types/aria-query/-/aria-query-5.0.4.tgz",
+       "integrity": "sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==",
+       "dev": true,
+-      "license": "MIT",
+-      "peer": true
++      "license": "MIT"
+     },
+     "node_modules/@types/chai": {
+       "version": "5.2.3",
+@@ -2935,6 +2939,7 @@
+       "integrity": "sha512-ECymXOukMnOoVkC2bb1Vc/w/836DXncOg5m8Xj1RH7xSHZJWNYY6Zh7EH477vcnD5egKNNfy2RpNOmuChhFPgQ==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "undici-types": "~6.21.0"
+       }
+@@ -2945,6 +2950,7 @@
+       "integrity": "sha512-eRwcGNHve+E8qtEQSSRl6urh+rFop4v8gm6O8rGv25CodbvFdLjA1vVQ1KkiFE0w0UPOnb8tDiFKL5lp0rtY5Q==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "csstype": "^3.2.2"
+       }
+@@ -2955,6 +2961,7 @@
+       "integrity": "sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "peerDependencies": {
+         "@types/react": "^19.2.0"
+       }
+@@ -3019,6 +3026,7 @@
+       "integrity": "sha512-fcqpj/MyK4sxDPcbe7STNPbpQL4RLZOPWuaTmwZYuc+hJKzRf58yRxfhqGpc6PIq9ZyfSBpfHgmUHmHs0KwHwg==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@typescript-eslint/scope-manager": "8.60.0",
+         "@typescript-eslint/types": "8.60.0",
+@@ -3626,6 +3634,7 @@
+       "integrity": "sha512-qsYPeXc5Q9dFLd1i8Ap+Bx8sQgcp+rFVQo4R0dDsWNBzl26ldVF1qOO+RL24K7FDrR6pA+50XedRLSoSG24bVQ==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@bcoe/v8-coverage": "^1.0.2",
+         "@vitest/utils": "4.1.7",
+@@ -3755,6 +3764,7 @@
+       "integrity": "sha512-TP6utB2yX6rsJNVRo2qAlsi48i1YwFTrLV2tnTtWqJaYX7m4lRCCLirZBjU6xC5m0RsPHr+L2+N+eIPhgEzFfw==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@vitest/utils": "4.1.7",
+         "fflate": "^0.8.2",
+@@ -3806,6 +3816,7 @@
+       "integrity": "sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "bin": {
+         "acorn": "bin/acorn"
+       },
+@@ -3862,7 +3873,6 @@
+       "integrity": "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "engines": {
+         "node": ">=8"
+       }
+@@ -4252,6 +4262,7 @@
+         }
+       ],
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "baseline-browser-mapping": "^2.10.12",
+         "caniuse-lite": "^1.0.30001782",
+@@ -4525,7 +4536,8 @@
+       "version": "3.2.3",
+       "resolved": "https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz",
+       "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==",
+-      "license": "MIT"
++      "license": "MIT",
++      "peer": true
+     },
+     "node_modules/damerau-levenshtein": {
+       "version": "1.0.8",
+@@ -4717,8 +4729,7 @@
+       "resolved": "https://registry.npmjs.org/dom-accessibility-api/-/dom-accessibility-api-0.5.16.tgz",
+       "integrity": "sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==",
+       "dev": true,
+-      "license": "MIT",
+-      "peer": true
++      "license": "MIT"
+     },
+     "node_modules/dunder-proto": {
+       "version": "1.0.1",
+@@ -5043,6 +5054,7 @@
+       "integrity": "sha512-XoMjdBOwe/esVgEvLmNsD3IRHkm7fbKIUGvrleloJXUZgDHig2IPWNniv+GwjyJXzuNqVjlr5+4yVUZjycJwfQ==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@eslint-community/eslint-utils": "^4.8.0",
+         "@eslint-community/regexpp": "^4.12.1",
+@@ -5244,6 +5256,7 @@
+       "integrity": "sha512-whOE1HFo/qJDyX4SnXzP4N6zOWn79WhnCUY/iDR0mPfQZO8wcYE4JClzI2oZrhBnnMUCBCHZhO6VQyoBU95mZA==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@rtsao/scc": "^1.1.0",
+         "array-includes": "^3.1.9",
+@@ -7350,7 +7363,6 @@
+       "integrity": "sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "bin": {
+         "lz-string": "bin/bin.js"
+       }
+@@ -7803,6 +7815,7 @@
+       "resolved": "https://registry.npmjs.org/next/-/next-16.2.6.tgz",
+       "integrity": "sha512-qOVgKJg1+At15NpeUP+eJgCHvTCgXsogweq87Ri/Ix7PkqQHg4sdaXmSFqKlgaIXE4kW0g25LE68W87UANlHtw==",
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@next/env": "16.2.6",
+         "@swc/helpers": "0.5.15",
+@@ -8320,6 +8333,7 @@
+         }
+       ],
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "nanoid": "^3.3.12",
+         "picocolors": "^1.1.1",
+@@ -8368,7 +8382,6 @@
+       "integrity": "sha512-Qb1gy5OrP5+zDf2Bvnzdl3jsTf1qXVMazbvCoKhtKqVs4/YK4ozX4gKQJJVyNe+cajNPn0KoC0MC3FUmaHWEmQ==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "dependencies": {
+         "ansi-regex": "^5.0.1",
+         "ansi-styles": "^5.0.0",
+@@ -8384,7 +8397,6 @@
+       "integrity": "sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA==",
+       "dev": true,
+       "license": "MIT",
+-      "peer": true,
+       "engines": {
+         "node": ">=10"
+       },
+@@ -8397,8 +8409,7 @@
+       "resolved": "https://registry.npmjs.org/react-is/-/react-is-17.0.2.tgz",
+       "integrity": "sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==",
+       "dev": true,
+-      "license": "MIT",
+-      "peer": true
++      "license": "MIT"
+     },
+     "node_modules/prop-types": {
+       "version": "15.8.1",
+@@ -8464,6 +8475,7 @@
+       "resolved": "https://registry.npmjs.org/react/-/react-19.2.4.tgz",
+       "integrity": "sha512-9nfp2hYpCwOjAN+8TZFGhtWEwgvWHXqESH8qT89AT/lWklpLON22Lc8pEtnpsZz7VmawabSU0gCjnj8aC0euHQ==",
+       "license": "MIT",
++      "peer": true,
+       "engines": {
+         "node": ">=0.10.0"
+       }
+@@ -8473,6 +8485,7 @@
+       "resolved": "https://registry.npmjs.org/react-dom/-/react-dom-19.2.4.tgz",
+       "integrity": "sha512-AXJdLo8kgMbimY95O2aKQqsz2iWi9jMgKJhRBAxECE4IFxfcazB2LmzloIoibJI3C12IlY20+KFaLv+71bUJeQ==",
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "scheduler": "^0.27.0"
+       },
+@@ -9529,6 +9542,7 @@
+       "integrity": "sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "engines": {
+         "node": ">=12"
+       },
+@@ -9666,6 +9680,7 @@
+       "integrity": "sha512-mdoNxBC/cSQObGGVQ5Bpn5i+yv7j68gk3Nfm3wFjcJg3Z0Mix9jzAFfP12prmm5eVGmDKtp0yyArrs0Q+8gZHg==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "esbuild": "~0.28.0"
+       },
+@@ -9790,6 +9805,7 @@
+       "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
+       "dev": true,
+       "license": "Apache-2.0",
++      "peer": true,
+       "bin": {
+         "tsc": "bin/tsc",
+         "tsserver": "bin/tsserver"
+@@ -9943,6 +9959,7 @@
+       "integrity": "sha512-s4BJJ+5y1pYL6Otw51FHhVJQhPnuRinKig64g/1+EUNaJsd3gCKdD31IPFvswUgW9/60QT9oFHbZHbQK5imcxw==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "lightningcss": "^1.32.0",
+         "picomatch": "^4.0.4",
+@@ -10034,6 +10051,7 @@
+       "integrity": "sha512-flYyaFd2CgoCoU+0UKt3pxksgC+S02iTDN0n3LtqaMeXsI9SBcdNujc2k0DeFLzUn/0k538yNjOSdwgCqcrwJA==",
+       "dev": true,
+       "license": "MIT",
++      "peer": true,
+       "dependencies": {
+         "@vitest/expect": "4.1.7",
+         "@vitest/mocker": "4.1.7",
+@@ -10400,6 +10418,7 @@
+       "resolved": "https://registry.npmjs.org/zod/-/zod-4.4.3.tgz",
+       "integrity": "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==",
+       "license": "MIT",
++      "peer": true,
+       "funding": {
+         "url": "https://github.com/sponsors/colinhacks"
+       }
+diff --git a/pr-982.md b/pr-982.md
+new file mode 100644
+index 0000000..9cda973
+--- /dev/null
++++ b/pr-982.md
+@@ -0,0 +1,16 @@
++## Description ΓÇö What does this PR do? Which issue does it fix?
++
++This PR implements the requested Versus Mode feature for "Multiplayer Monoliths". Users can now append the `?versus=username2` parameter to the streak API route to compare their commit activity with a friend side-by-side on the same SVG canvas. The `generateVersusSVG` generator offsets their X translations so both isometric cities are rendered beautifully side-by-side with a divider and a VS badge.
++
++Fixes #982
++
++## Pillar ΓÇö Which contribution pillar does this fall under?
++
++- [x] ≡ƒÜÇ New Feature
++
++## Checklist ΓÇö Have you ticked off the quality checklist?
++
++- [x] I have read the [CONTRIBUTING.md](https://github.com/JhaSourav07/commitpulse/blob/main/CONTRIBUTING.md) guidelines.
++- [x] I have added tests that prove my fix is effective or that my feature works.
++- [x] New and existing unit tests pass locally with my changes.
++- [x] I have kept the scope of my changes strictly related to the issue.
+diff --git a/types/index.ts b/types/index.ts
+index 3875331..5679997 100644
+--- a/types/index.ts
++++ b/types/index.ts
+@@ -73,6 +73,24 @@ export interface ContributionCalendar {
+   weeks: ContributionWeek[];
+ }
+ 
++/**
++ * Represents a user's contributions to a specific repository.
++ */
++export interface RepoContribution {
++  repository: {
++    primaryLanguage: { name: string } | null;
++  };
++  contributions: { totalCount: number };
++}
++
++/**
++ * Extended contribution data including both the calendar and repository-specific contributions.
++ */
++export interface ExtendedContributionData {
++  calendar: ContributionCalendar;
++  repoContributions: RepoContribution[];
++}
++
+ /**
+  * Month-over-month contribution statistics used by the monthly view.
+  */
